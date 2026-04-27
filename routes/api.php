@@ -11,3 +11,7 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh'])->middleware('auth:admin');
     Route::get('me', [AuthController::class, 'me'])->middleware('auth:admin');
 });
+
+Route::middleware('auth:admin')->group(function () {
+    Route::apiResource('products', \App\Http\Controllers\Api\Admin\ProductController::class);
+});
