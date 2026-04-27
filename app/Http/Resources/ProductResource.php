@@ -20,7 +20,7 @@ class ProductResource extends JsonResource
             'product_title' => $this->product_title,
             'product_description' => $this->product_description,
             'product_image' => $this->product_image ? asset(Storage::url($this->product_image)) : null,
-            'product_badge_popular' => (bool) $this->product_badge_popular,
+            'product_badge_popular' => $this->product_badge_popular,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

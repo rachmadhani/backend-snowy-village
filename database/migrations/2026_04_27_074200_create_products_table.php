@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('product_title');
             $table->string('product_description');
             $table->string('product_image');
-            $table->boolean('product_badge_popular');
+            $table->string('product_badge_popular')->nullable();
             $table->timestamps();
         });
     }
