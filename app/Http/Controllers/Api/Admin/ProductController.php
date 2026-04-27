@@ -18,7 +18,7 @@ class ProductController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        return ProductResource::collection(products::latest()->get());
+        return ProductResource::collection(products::latest()->take(9)->get());
     }
 
     /**
