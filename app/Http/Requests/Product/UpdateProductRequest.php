@@ -17,7 +17,7 @@ class UpdateProductRequest extends FormRequest
             'product_title' => 'sometimes|required|string|max:255',
             'product_description' => 'sometimes|required|string',
             'product_image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'product_badge_popular' => 'sometimes|required|text',
+            'product_badge_popular' => 'sometimes|required|string',
         ];
     }
 }
