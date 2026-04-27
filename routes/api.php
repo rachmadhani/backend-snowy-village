@@ -14,4 +14,5 @@ Route::group([
 
 Route::middleware('auth:admin')->group(function () {
     Route::apiResource('products', \App\Http\Controllers\Api\Admin\ProductController::class);
+    Route::apiResource('locations', \App\Http\Controllers\Api\Admin\LocationController::class);
 });
