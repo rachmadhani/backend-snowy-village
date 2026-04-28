@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->string('city_name');
-            $table->text('address');
-            $table->string('phone_number');
-            $table->json('opening_hours');
+            $table->text('address')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->json('opening_hours')->nullable();
             $table->string('map_url')->nullable();
             $table->timestamps();
         });

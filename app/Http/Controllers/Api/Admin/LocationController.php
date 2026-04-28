@@ -17,7 +17,7 @@ class LocationController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        return LocationResource::collection(location::all());
+        return LocationResource::collection(location::latest()->take(12)->get());
     }
 
     /**
