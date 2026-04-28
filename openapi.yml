@@ -1,0 +1,391 @@
+openapi: 3.0.3
+info:
+  title: Snowy Village Backend API
+  description: API documentation for the Snowy Village backend system, including Admin authentication, Product management, and Location management.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Admin:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_title:
+          type: string
+        product_description:
+          type: string
+        product_image:
+          type: string
+          format: uri
+          nullable: true
+        product_badge_popular:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+        city_name:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+        opening_hours:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        formatted_hours:
+          type: array
+          items:
+            type: string
+          description: Human-readable opening hours grouped by similar times.
+        map_url:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+paths:
+  /admin/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Admin Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+                  expires_in:
+                    type: integer
+                  user:
+                    $ref: '#/components/schemas/Admin'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current admin info
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current admin data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'
+
+  /admin/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout current admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+
+  /products:
+    get:
+      tags:
+        - Products
+      summary: List 9 latest products
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+    post:
+      tags:
+        - Products
+      summary: Create a new product
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - product_title
+                - product_description
+                - product_image
+                - product_badge_popular
+              properties:
+                product_title:
+                  type: string
+                product_description:
+                  type: string
+                product_image:
+                  type: string
+                  format: binary
+                product_badge_popular:
+                  type: boolean
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+  /products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Get product detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+    post:
+      tags:
+        - Products
+      summary: Update product (using POST with _method=PUT)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                _method:
+                  type: string
+                  default: PUT
+                product_title:
+                  type: string
+                product_description:
+                  type: string
+                product_image:
+                  type: string
+                  format: binary
+                product_badge_popular:
+                  type: boolean
+      responses:
+        '200':
+          description: Product updated
+    delete:
+      tags:
+        - Products
+      summary: Delete product
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Product deleted
+
+  /locations:
+    get:
+      tags:
+        - Locations
+      summary: List all locations
+      responses:
+        '200':
+          description: List of locations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Location'
+    post:
+      tags:
+        - Locations
+      summary: Create a new location
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - city_name
+                - address
+                - phone_number
+                - opening_hours
+              properties:
+                city_name:
+                  type: string
+                address:
+                  type: string
+                phone_number:
+                  type: string
+                opening_hours:
+                  type: object
+                map_url:
+                  type: string
+      responses:
+        '201':
+          description: Location created
+
+  /locations/{id}:
+    get:
+      tags:
+        - Locations
+      summary: Get location detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Location data
+    put:
+      tags:
+        - Locations
+      summary: Update location
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                city_name:
+                  type: string
+                address:
+                  type: string
+                phone_number:
+                  type: string
+                opening_hours:
+                  type: object
+                map_url:
+                  type: string
+      responses:
+        '200':
+          description: Location updated
+    delete:
+      tags:
+        - Locations
+      summary: Delete location
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Location deleted
