@@ -19,6 +19,26 @@ class location extends Model
     ];
 
     /**
+     * Mutator to clean up opening hours before saving.
+     * Ensures empty days are [] instead of [null].
+     */
+    public function setOpeningHoursAttribute($value)
+    {
+        if (is_array($value)) {
+            foreach ($value as $day => $times) {
+                if (is_array($times)) {
+                    // Remove null values and empty strings
+                    $cleanedTimes = array_values(array_filter($times, function ($time) {
+                        return !is_null($time) && $time !== '';
+                    }));
+                    $value[$day] = $cleanedTimes;
+                }
+            }
+        }
+        $this->attributes['opening_hours'] = json_encode($value);
+    }
+
+    /**
      * Get grouped opening hours for display.
      * Logic: Monday to Thursday: 15:00-22:00
      */
@@ -35,7 +55,9 @@ class location extends Model
 
         foreach ($days as $day) {
             $timeArray = $hours[$day] ?? [];
-            $currentTime = empty($timeArray) ? 'Closed' : $timeArray[0];
+            $currentTime = (empty($timeArray) || !isset($timeArray[0]) || $timeArray[0] === null) 
+                ? 'Closed' 
+                : (string)$timeArray[0];
 
             if ($currentTime === $lastTime) {
                 $currentGroup[] = $day;

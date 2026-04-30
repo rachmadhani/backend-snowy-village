@@ -19,7 +19,17 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://snowyvillages.com','https://www.snowyvillages.com'],
+    'allowed_origins' => [
+        'https://snowyvillages.com',
+        'https://www.snowyvillages.com',
+        'http://snowyvillages.com',
+        'http://www.snowyvillages.com',
+        'https://api.snowyvillages.com',
+        'http://api.snowyvillages.com',
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:8000',
+    ],
 
     'allowed_origins_patterns' => [],
 
