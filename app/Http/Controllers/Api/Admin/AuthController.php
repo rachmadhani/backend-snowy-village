@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\LoginRequest;
 use App\Http\Resources\Admin\AdminResource;
 use Illuminate\Http\JsonResponse;
+use App\Models\Admin;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
     /**
-     * Get a JWT via given credentials.
+     * Get a token via given credentials.
      *
      * @param LoginRequest $request
      * @return JsonResponse
@@ -28,7 +30,9 @@ class AuthController extends Controller
         ]);
 
         try {
-            if (! $token = Auth::guard('admin')->attempt($credentials)) {
+            $admin = Admin::where('email', $credentials['email'])->first();
+
+            if (! $admin || ! Hash::check($credentials['password'], $admin->password)) {
                 Log::warning('Login failed: Unauthorized credentials', [
                     'email' => $credentials['email'],
                     'ip' => $request->ip()
@@ -36,12 +40,14 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
 
+            $token = $admin->createToken('admin-token')->plainTextToken;
+
             Log::info('Login successful', [
                 'email' => $credentials['email'],
                 'ip' => $request->ip()
             ]);
 
-            return $this->respondWithToken($token);
+            return $this->respondWithToken($token, $admin);
         } catch (\Exception $e) {
             Log::error('Login error: ' . $e->getMessage(), [
                 'email' => $credentials['email'],
@@ -69,35 +75,25 @@ class AuthController extends Controller
      */
     public function logout(): JsonResponse
     {
-        Auth::guard('admin')->logout();
+        Auth::guard('admin')->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Successfully logged out']);
-    }
-
-    /**
-     * Refresh a token.
-     *
-     * @return JsonResponse
-     */
-    public function refresh(): JsonResponse
-    {
-        return $this->respondWithToken(Auth::guard('admin')->refresh());
     }
 
     /**
      * Get the token array structure.
      *
      * @param string $token
+     * @param Admin $admin
      *
      * @return JsonResponse
      */
-    protected function respondWithToken(string $token): JsonResponse
+    protected function respondWithToken(string $token, Admin $admin): JsonResponse
     {
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => Auth::guard('admin')->factory()->getTTL() * 60,
-            'user' => new AdminResource(Auth::guard('admin')->user()),
+            'user' => new AdminResource($admin),
         ]);
     }
 }

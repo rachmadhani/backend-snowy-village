@@ -9,7 +9,6 @@ Route::group([
 ], function ($router) {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:admin');
-    Route::post('refresh', [AuthController::class, 'refresh'])->middleware('auth:admin');
     Route::get('me', [AuthController::class, 'me'])->middleware('auth:admin');
 });
 
