@@ -12,7 +12,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: Sanctum
 
   schemas:
     Admin:
@@ -87,6 +87,29 @@ components:
           type: string
           format: date-time
 
+    Franchise:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone_number:
+          type: string
+        location:
+          type: string
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
     ErrorResponse:
       type: object
       properties:
@@ -126,8 +149,6 @@ paths:
                     type: string
                   token_type:
                     type: string
-                  expires_in:
-                    type: integer
                   user:
                     $ref: '#/components/schemas/Admin'
         '401':
@@ -389,3 +410,114 @@ paths:
       responses:
         '204':
           description: Location deleted
+  /franchises:
+    get:
+      tags:
+        - Franchises
+      summary: List all franchise inquiries
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of franchise inquiries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Franchise'
+    post:
+      tags:
+        - Franchises
+      summary: Submit a new franchise inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - phone_number
+                - location
+                - message
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone_number:
+                  type: string
+                location:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '201':
+          description: Inquiry submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Franchise'
+
+  /franchises/{id}:
+    get:
+      tags:
+        - Franchises
+      summary: Get franchise inquiry detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Franchise data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Franchise'
+    put:
+      tags:
+        - Franchises
+      summary: Update franchise inquiry
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Franchise'
+      responses:
+        '200':
+          description: Inquiry updated
+    delete:
+      tags:
+        - Franchises
+      summary: Delete franchise inquiry
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Inquiry deleted
