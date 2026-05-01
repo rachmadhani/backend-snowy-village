@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\LoginRequest;
 use App\Http\Resources\Admin\AdminResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -20,11 +21,35 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        if (! $token = Auth::guard('admin')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+        Log::info('Login attempt', [
+            'email' => $credentials['email'],
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
 
-        return $this->respondWithToken($token);
+        try {
+            if (! $token = Auth::guard('admin')->attempt($credentials)) {
+                Log::warning('Login failed: Unauthorized credentials', [
+                    'email' => $credentials['email'],
+                    'ip' => $request->ip()
+                ]);
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            Log::info('Login successful', [
+                'email' => $credentials['email'],
+                'ip' => $request->ip()
+            ]);
+
+            return $this->respondWithToken($token);
+        } catch (\Exception $e) {
+            Log::error('Login error: ' . $e->getMessage(), [
+                'email' => $credentials['email'],
+                'ip' => $request->ip(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Internal Server Error'], 500);
+        }
     }
 
     /**

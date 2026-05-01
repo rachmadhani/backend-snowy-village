@@ -19,7 +19,7 @@ class UpdateLocationRequest extends FormRequest
             'phone_number' => 'sometimes|required|string|max:20',
             'opening_hours' => 'sometimes|required|array',
             'opening_hours.*' => 'array',
-            'map_url' => 'sometimes|nullable|url',
+            'map_url' => 'sometimes|required|url',
         ];
     }
 }

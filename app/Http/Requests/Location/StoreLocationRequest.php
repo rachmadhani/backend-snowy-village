@@ -19,7 +19,7 @@ class StoreLocationRequest extends FormRequest
             'phone_number' => 'required|string|max:20',
             'opening_hours' => 'required|array',
             'opening_hours.*' => 'array', // Each day must be an array
-            'map_url' => 'nullable|url',
+            'map_url' => 'required|url',
         ];
     }
 }
