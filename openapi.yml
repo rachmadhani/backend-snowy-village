@@ -459,11 +459,18 @@ paths:
                   type: string
       responses:
         '201':
-          description: Inquiry submitted successfully
+          description: Inquiry submitted successfully. A notification email is sent to denny@snowyvillages.com.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Franchise'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Franchise'
+                  email_sent:
+                    type: boolean
+                    description: Whether the notification email was successfully sent
+
 
   /franchises/{id}:
     get:

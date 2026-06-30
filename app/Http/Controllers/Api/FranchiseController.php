@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreFranchiseRequest;
 use App\Http\Resources\FranchiseResource;
+use App\Mail\FranchiseInquiryMail;
 use App\Models\Franchise;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Mail;
 
 class FranchiseController extends Controller
 {
@@ -26,8 +28,20 @@ class FranchiseController extends Controller
     {
         $franchise = Franchise::create($request->validated());
 
-        return new FranchiseResource($franchise);
+        $emailSent = false;
+
+        try {
+            Mail::to('denny@snowyvillages.com')->send(new FranchiseInquiryMail($franchise));
+            $emailSent = true;
+        } catch (\Exception $e) {
+            report($e);
+        }
+
+        return (new FranchiseResource($franchise))->additional([
+            'email_sent' => $emailSent,
+        ]);
     }
+
 
     /**
      * Display the specified resource.
